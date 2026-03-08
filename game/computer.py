@@ -33,12 +33,12 @@ class Computer(Player):
                 )
             process.terminate()
             process.join()
-            return next(board.available_moves())
+            return next(board.moves())
 
         if queue.empty():
             if warn:
                 print("WARNING: The solver did not return a solution.")
-            return next(board.available_moves())
+            return next(board.moves())
         return queue.get()
 
     def play_against(self, other: "Computer", times=100, time_limit=0.1):
@@ -98,10 +98,3 @@ class Computer(Player):
 
         print(label_row)
         print(bar)
-
-
-if __name__ == "__main__":
-    Computer(lambda _: 0).print_play_against_results(100, 0, 0)
-    Computer(lambda _: 0).print_play_against_results(100, 0, 100)
-    Computer(lambda _: 0).print_play_against_results(0, 100, 0)
-    Computer(lambda _: 0).print_play_against_results(100, 100, 100)

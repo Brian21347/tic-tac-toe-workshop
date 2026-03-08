@@ -10,9 +10,7 @@ from game.position import Position
 from game.person import Person
 from game.player import Player
 from game.computer import Computer
-from solvers.weak_minimax import weak_minimax_find_move
 from solvers.minimax import minimax_find_move
-from solvers.alpha_beta import alpha_beta_find_move
 from game.reset import ResetButton
 import pygame
 
@@ -180,15 +178,6 @@ class Game:
             )
         # endregion
 
-        # region: draw the hovered x and o values.
-        for i, move in self.position.moves():
-            pos = self.get_screen_value(i)
-            if move == Cell.PLAYER1:
-                self.draw_x(pos)
-            else:
-                self.draw_o(pos)
-        # endregion
-
         if waiting:
             message = "Waiting for player %s to make a move"
             message %= "1" if self.position.move_index % 2 == 1 else "2"
@@ -204,9 +193,3 @@ class Game:
             self.ui_group.draw(self.SCREEN)
 
         pygame.display.update()
-
-
-if __name__ == "__main__":
-    p1 = Computer(weak_minimax_find_move)
-    p2 = Person()
-    Game(p1, p2).run_game()

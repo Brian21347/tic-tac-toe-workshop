@@ -47,10 +47,6 @@ class Position:
             self.board = board
         self._last_move = None
 
-    @property
-    def flattened_size(self):
-        return BOARD_SIZE * BOARD_SIZE
-
     def try_move(self, move: int):
         if not self.can_play(move):
             raise ValueError
@@ -65,36 +61,43 @@ class Position:
         return self
 
     def moves(self):
-        for i, move in enumerate(self.board):
-            if move is not Cell.EMPTY:
-                yield i, move
+        for move, value in enumerate(self.board):
+            if value is not Cell.EMPTY:
+                yield move
 
     def can_play(self, move: int):
         if move < 0 or move >= self.flattened_size:
             raise ValueError(f'Move "{move}" is not in the range [{0}, {self.flattened_size - 1}]')
         return self.board[move] == Cell.EMPTY
 
-    def available_moves(self) -> Generator[int, Any, None]:
-        for x in range(BOARD_SIZE):
-            for y in range(BOARD_SIZE):
-                if self.board[y * BOARD_SIZE + x] == Cell.EMPTY:
-                    yield y * BOARD_SIZE + x
-
-    def reset(self):
-        self.move_index = 0
-        self.board = [Cell.EMPTY] * self.flattened_size
-
-    def set_move(self, index, value):
-        assert (
-            self.board[index] == Cell.EMPTY
-        ), f"Tried setting a move on a nonempty cell {repr(self)} with the move {value}"
-        self.board[index] = value
-
     def check_game_ends(self):
         if (did_win := self.check_win()) is not None:
             return did_win
         if self.move_index == self.flattened_size:
             return DRAW
+
+    def check_win(self):
+        """Assumes that if _last_move is not None, if there is a win, then the win must involve the most recent move."""
+        if self._last_move is not None:
+            if self.check_cell(self._last_move):
+                return self.board[self._last_move]
+            return
+        for cell in range(self.flattened_size):
+            if self.board[cell] == Cell.EMPTY:
+                continue
+            if self.check_cell(cell):
+                return self.board[cell]
+
+    def check_cell(self, move: int):
+        if move < 0 or move >= self.flattened_size:
+            raise ValueError
+        #          bottomleft      bottomright     below       right
+        offsets = (BOARD_SIZE - 1, BOARD_SIZE + 1, BOARD_SIZE, 1)
+        for offset in offsets:
+            in_a_row = self.check_direction(move, offset) + self.check_direction(move, -offset) - 1
+            if in_a_row >= IN_A_ROW:
+                return True
+        return False
 
     def check_direction(self, move: int, offset: int):
         curr = move
@@ -108,28 +111,25 @@ class Position:
             curr += offset
         return count
 
-    def check_cell(self, move: int):
-        if move < 0 or move >= self.flattened_size:
-            raise ValueError
-        #          bottomleft      bottomright     below       right
-        offsets = (BOARD_SIZE - 1, BOARD_SIZE + 1, BOARD_SIZE, 1)
-        for offset in offsets:
-            in_a_row = self.check_direction(move, offset) + self.check_direction(move, -offset) - 1
-            if in_a_row >= IN_A_ROW:
-                return True
-        return False
+    @property
+    def flattened_size(self):
+        return BOARD_SIZE * BOARD_SIZE
 
-    def check_win(self):
-        """Assumes that if _last_move is not None, if there is a win, then the win must involve the most recent move."""
+    def reset(self):
+        self.move_index = 0
+        self.board = [Cell.EMPTY] * self.flattened_size
+
+    def set_move(self, index, value):
+        assert (
+            self.board[index] == Cell.EMPTY
+        ), f"Tried setting a move on a nonempty cell {repr(self)} with the move {value}"
+        self.board[index] = value
+
+    def copy(self):
+        pos = Position(self.board.copy(), self.move_index)
         if self._last_move is not None:
-            if self.check_cell(self._last_move):
-                return self.board[self._last_move]
-            return
-        for cell in range(self.flattened_size):
-            if self.board[cell] == Cell.EMPTY:
-                continue
-            if self.check_cell(cell):
-                return self.board[cell]
+            pos._last_move = self._last_move
+        return pos
 
     def __repr__(self):
         out = ""
@@ -150,18 +150,3 @@ class Position:
                 out += (RED + "X" if player == Cell.PLAYER1 else GREEN + "O") + RESET
         return out + "|\n" + row
 
-    def copy(self):
-        pos = Position(self.board.copy(), self.move_index)
-        if self._last_move is not None:
-            pos._last_move = self._last_move
-        return pos
-
-
-if __name__ == "__main__":
-    pos = Position()
-    n_pos = pos.try_move(0)
-    print(pos)
-    print(n_pos, n_pos.move_index)
-    n_pos.add_move(1)
-    print(pos)
-    print(n_pos, n_pos.move_index)
