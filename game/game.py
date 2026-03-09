@@ -178,6 +178,30 @@ class Game:
             )
         # endregion
 
+        # region: draw the hovered x and o values.
+        if (
+            self.winner is None
+            and not waiting
+            and (board_value := self.get_board_value(pygame.mouse.get_pos())) is not None
+            and self.position.get_cell_value(board_value) is Cell.EMPTY
+        ):
+            pos = self.get_screen_value(board_value)
+            if self.position.move_index % 2 == 0:
+                self.draw_x(pos)
+            else:
+                self.draw_o(pos)
+        # endregion
+
+        # region: draw the x and o values.
+        for move in self.position.moves():
+            pos = self.get_screen_value(move)
+            val = self.position.get_cell_value(move)
+            if val == Cell.PLAYER1:
+                self.draw_x(pos)
+            else:
+                self.draw_o(pos)
+        # endregion
+
         if waiting:
             message = "Waiting for player %s to make a move"
             message %= "1" if self.position.move_index % 2 == 1 else "2"

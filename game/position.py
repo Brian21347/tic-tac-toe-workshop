@@ -59,6 +59,11 @@ class Position:
         self.board[move] = Cell.PLAYER1 if self.move_index % 2 == 0 else Cell.PLAYER2
         self.move_index += 1
         return self
+    
+    def get_cell_value(self, move: int):
+        if move < 0 or move >= len(self.board):
+            raise ValueError
+        return self.board[move]
 
     def moves(self):
         for move, value in enumerate(self.board):
