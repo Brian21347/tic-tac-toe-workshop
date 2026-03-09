@@ -180,7 +180,7 @@ class Game:
             )
         # endregion
 
-        # region: draw the hovered x and o values.
+        # region: draw the x and o values.
         for i, move in self.position.moves():
             pos = self.get_screen_value(i)
             if move == Cell.PLAYER1:
