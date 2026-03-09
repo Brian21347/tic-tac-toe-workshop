@@ -64,6 +64,11 @@ class Position:
         self.move_index += 1
         return self
 
+    def get_cell_value(self, move: int):
+        if move < 0 or move >= len(self.board):
+            raise ValueError
+        return self.board[move]
+
     def moves(self):
         for i, move in enumerate(self.board):
             if move is not Cell.EMPTY:
@@ -101,9 +106,13 @@ class Position:
         count = 0
         while curr >= 0 and curr < len(self.board) and self.board[curr] == self.board[move]:
             count += 1
-            if curr % BOARD_SIZE == 0 and (offset == BOARD_SIZE - 1 or offset == -1 or offset == -BOARD_SIZE - 1):
+            if curr % BOARD_SIZE == 0 and (
+                offset == BOARD_SIZE - 1 or offset == -1 or offset == -BOARD_SIZE - 1
+            ):
                 break
-            if curr % BOARD_SIZE == BOARD_SIZE - 1 and (offset == BOARD_SIZE + 1 or offset == 1 or offset == - BOARD_SIZE + 1):
+            if curr % BOARD_SIZE == BOARD_SIZE - 1 and (
+                offset == BOARD_SIZE + 1 or offset == 1 or offset == -BOARD_SIZE + 1
+            ):
                 break
             curr += offset
         return count
